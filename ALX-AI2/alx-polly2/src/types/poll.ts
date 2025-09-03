@@ -30,3 +30,10 @@ export interface VoteData {
   pollId: string
   optionIds: string[]
 }
+
+export interface EditPollForm {
+  id: string
+  title: string
+  description?: string
+  creator_id: string
+}
