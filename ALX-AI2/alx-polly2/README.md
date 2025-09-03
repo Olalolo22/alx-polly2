@@ -76,6 +76,39 @@ npm run dev
 - `npm run start` - Start production server
 - `npm run lint` - Run ESLint
 
+## Database schema
+
+The database schema is defined in `supabase/migrations/0001_create_polls.sql`:
+
+- polls: poll metadata owned by a user
+- poll_options: options for a poll
+- votes: one vote per user per poll (enforced)
+- poll_option_results: view aggregating votes per option
+
+All tables have RLS enabled with safe policies. No secrets are hardcoded.
+
+### Apply the migration
+
+Option A: Supabase SQL Editor
+
+1. Open the Supabase dashboard SQL Editor
+2. Paste the contents of `supabase/migrations/0001_create_polls.sql`
+3. Run
+
+Option B: Supabase CLI
+
+1. Install and login: `npm i -g supabase && supabase login`
+2. Link project: `supabase link --project-ref <your-project-ref>`
+3. Push migrations: `supabase db push`
+
+Set env vars in `.env.local`:
+
+```
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+```
+
 ## Technology Stack
 
 - **Framework**: Next.js 15 with App Router

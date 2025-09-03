@@ -3,6 +3,7 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
 import { useState } from "react"
+import { createPoll } from "@/lib/actions"
 
 export default function CreatePollPage() {
   return (
@@ -24,7 +25,7 @@ export default function CreatePollPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form className="space-y-6">
+            <form className="space-y-6" action={createPoll}>
               <div className="space-y-2">
                 <label htmlFor="title" className="text-sm font-medium">
                   Poll Title
@@ -34,6 +35,7 @@ export default function CreatePollPage() {
                   type="text"
                   placeholder="Enter your poll question"
                   required
+                  name="title"
                 />
               </div>
 
@@ -46,6 +48,7 @@ export default function CreatePollPage() {
                   className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                   placeholder="Add more details about your poll"
                   rows={3}
+                  name="description"
                 />
               </div>
 
@@ -57,6 +60,7 @@ export default function CreatePollPage() {
                       <Input
                         placeholder={`Option ${index}`}
                         required={index <= 2}
+                        name="options"
                       />
                       {index > 2 && (
                         <Button
