@@ -37,3 +37,16 @@ export interface EditPollForm {
   description?: string
   creator_id: string
 }
+
+export interface PollFromDB {
+  id: string
+  title: string
+  description: string | null
+  creator_id: string
+  created_at: string
+}
+
+export interface PollWithVotes extends PollFromDB {
+  totalVotes: number
+  isOwner: boolean
+}
