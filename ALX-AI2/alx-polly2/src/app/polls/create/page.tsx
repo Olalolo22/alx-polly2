@@ -107,6 +107,21 @@ export default function CreatePollPage() {
                 </div>
               </div>
 
+              <div className="space-y-2">
+                <label htmlFor="expiration-date" className="text-sm font-medium">
+                  Expiration Date (Optional)
+                </label>
+                <Input
+                  id="expiration-date"
+                  type="datetime-local"
+                  name="expirationDate"
+                  min={new Date().toISOString().slice(0, 16)}
+                />
+                <p className="text-xs text-gray-500">
+                  Leave empty for no expiration. Poll will automatically close after this date.
+                </p>
+              </div>
+
               <div className="flex gap-3 pt-4">
                 <Button type="submit" className="flex-1">
                   Create Poll

@@ -16,7 +16,7 @@ export default async function PollsPage({ searchParams }: { searchParams?: { cre
 
   const { data: polls } = await supabase
     .from("polls")
-    .select("id, title, description, creator_id, created_at")
+    .select("id, title, description, creator_id, created_at, expiration_date")
     .order("created_at", { ascending: false });
 
   const pollIds = (polls || []).map((p: any) => p.id);
@@ -64,11 +64,25 @@ export default async function PollsPage({ searchParams }: { searchParams?: { cre
         {(polls || []).map((poll: any) => {
           const totalVotes = totalVotesByPoll.get(poll.id) || 0;
           const isOwner = user?.id === poll.creator_id;
+          const isExpired = poll.expiration_date && new Date(poll.expiration_date) < new Date();
+          const expiresSoon = poll.expiration_date && new Date(poll.expiration_date) < new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+          
           return (
             <Card key={poll.id} className="hover:shadow-lg transition-shadow">
               <CardHeader>
                 <CardTitle className="text-lg">{poll.title}</CardTitle>
                 {poll.description && <CardDescription>{poll.description}</CardDescription>}
+                {poll.expiration_date && (
+                  <div className="text-xs text-gray-500 mt-1">
+                    {isExpired ? (
+                      <span className="text-red-600">Expired {new Date(poll.expiration_date).toLocaleDateString()}</span>
+                    ) : expiresSoon ? (
+                      <span className="text-orange-600">Expires {new Date(poll.expiration_date).toLocaleDateString()}</span>
+                    ) : (
+                      <span>Expires {new Date(poll.expiration_date).toLocaleDateString()}</span>
+                    )}
+                  </div>
+                )}
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
@@ -78,7 +92,13 @@ export default async function PollsPage({ searchParams }: { searchParams?: { cre
                   </div>
                   <div className="flex gap-2">
                     <Link href={`/polls/${poll.id}`} className="flex-1">
-                      <Button variant="outline" className="w-full">View</Button>
+                      <Button 
+                        variant="outline" 
+                        className="w-full"
+                        disabled={isExpired}
+                      >
+                        {isExpired ? "Expired" : "View"}
+                      </Button>
                     </Link>
                     {isOwner && (
                       <>
