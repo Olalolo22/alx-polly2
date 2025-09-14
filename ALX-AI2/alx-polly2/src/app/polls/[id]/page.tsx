@@ -12,7 +12,7 @@ export default async function PollDetailPage({ params, searchParams }: PageProps
 
   const { data: poll, error: pollError } = await supabase
     .from("polls")
-    .select("id, title, description, created_at")
+    .select("id, title, description, created_at, expiration_date")
     .eq("id", pollId)
     .single();
 
@@ -65,6 +65,7 @@ export default async function PollDetailPage({ params, searchParams }: PageProps
 
   const totalVotes = optionsWithCounts.reduce((sum, o) => sum + o.votes, 0);
   const hasVoted = searchParams?.voted === "1";
+  const isExpired = poll.expiration_date && new Date(poll.expiration_date) < new Date();
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -87,6 +88,15 @@ export default async function PollDetailPage({ params, searchParams }: PageProps
               <span>Poll ID: {poll.id}</span>
               <span>Created: {new Date(poll.created_at).toLocaleString()}</span>
             </div>
+            {poll.expiration_date && (
+              <div className="text-sm text-gray-600 mt-2">
+                {isExpired ? (
+                  <span className="text-red-600 font-medium">Expired: {new Date(poll.expiration_date).toLocaleString()}</span>
+                ) : (
+                  <span>Expires: {new Date(poll.expiration_date).toLocaleString()}</span>
+                )}
+              </div>
+            )}
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -95,7 +105,7 @@ export default async function PollDetailPage({ params, searchParams }: PageProps
                 <div className="text-sm text-gray-600">Total Votes</div>
               </div>
 
-              {!hasVoted && (
+              {!hasVoted && !isExpired && (
                 <form action={submitVote} className="space-y-4">
                   <input type="hidden" name="poll_id" value={poll.id} />
                   <div className="space-y-2">
@@ -108,6 +118,13 @@ export default async function PollDetailPage({ params, searchParams }: PageProps
                   </div>
                   <Button type="submit" className="w-full">Submit Vote</Button>
                 </form>
+              )}
+
+              {isExpired && !hasVoted && (
+                <div className="rounded-md border border-red-200 bg-red-50 p-4 text-center">
+                  <p className="text-red-800 font-medium">This poll has expired</p>
+                  <p className="text-red-600 text-sm mt-1">Voting is no longer available</p>
+                </div>
               )}
 
               {hasVoted && (

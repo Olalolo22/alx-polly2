@@ -16,6 +16,7 @@ export interface Poll {
   isActive: boolean
   allowMultipleVotes?: boolean
   showResultsImmediately?: boolean
+  expirationDate?: string
 }
 
 export interface CreatePollData {
@@ -24,6 +25,7 @@ export interface CreatePollData {
   options: string[]
   allowMultipleVotes: boolean
   showResultsImmediately: boolean
+  expirationDate?: string
 }
 
 export interface VoteData {

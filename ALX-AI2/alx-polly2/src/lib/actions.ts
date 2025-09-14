@@ -10,6 +10,7 @@ export async function createPoll(formData: FormData) {
   const title = String(formData.get("title") || "").trim();
   const description = String(formData.get("description") || "").trim();
   const isPublic = String(formData.get("is_public") || "on").toLowerCase() !== "off";
+  const expirationDate = String(formData.get("expirationDate") || "").trim();
 
   const rawOptions = formData.getAll("options").map((v) => String(v).trim());
   const options = rawOptions.filter((v) => v.length > 0);
@@ -28,9 +29,21 @@ export async function createPoll(formData: FormData) {
   if (userErr) throw userErr;
   if (!user) throw new Error("You must be signed in to create a poll");
 
+  // Prepare poll data with optional expiration date
+  const pollData: any = { 
+    title, 
+    description, 
+    is_public: isPublic, 
+    creator_id: user.id 
+  };
+  
+  if (expirationDate) {
+    pollData.expiration_date = expirationDate;
+  }
+
   const { data: poll, error: pollErr } = await supabase
     .from("polls")
-    .insert({ title, description, is_public: isPublic, creator_id: user.id })
+    .insert(pollData)
     .select("id")
     .single();
   if (pollErr) throw pollErr;
@@ -126,6 +139,18 @@ export async function submitVote(formData: FormData) {
   if (userErr) throw userErr;
   if (!user) {
     redirect(`/auth/login?next=/polls/${pollId}`);
+  }
+
+  // Check if poll is expired
+  const { data: poll, error: pollErr } = await supabase
+    .from("polls")
+    .select("expiration_date")
+    .eq("id", pollId)
+    .single();
+  
+  if (pollErr) throw pollErr;
+  if (poll?.expiration_date && new Date(poll.expiration_date) < new Date()) {
+    throw new Error("This poll has expired and voting is no longer available");
   }
 
   // Insert vote; RLS ensures poll is public and user can vote
