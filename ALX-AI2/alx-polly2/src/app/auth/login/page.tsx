@@ -1,9 +1,6 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   Card,
   CardContent,
@@ -11,82 +8,70 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { AuthForm } from "@/components/ui/AuthForm";
 import { createClient } from "@/lib/supabase-client";
+import { useState } from "react";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   const supabase = createClient();
+  const [loading, setLoading] = useState(false);
+  const [mode, setMode] = useState<"login" | "register">("login");
 
-  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setError(null);
-
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (error) {
-      setError(error.message);
+  const handleAuth = async (email: string, password: string) => {
+    setLoading(true);
+    let error;
+    if (mode === "login") {
+      ({ error } = await supabase.auth.signInWithPassword({ email, password }));
     } else {
-      router.push("/polls");
+      ({ error } = await supabase.auth.signUp({ email, password }));
     }
+    setLoading(false);
+    if (error) return error.message;
+    router.push("/polls");
+    return null;
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>Welcome Back</CardTitle>
+          <CardTitle>
+            {mode === "login" ? "Welcome Back" : "Create Account"}
+          </CardTitle>
           <CardDescription>
-            Sign in to your account to access your polls
+            {mode === "login"
+              ? "Sign in to your account to access your polls"
+              : "Register to start creating and voting on polls"}
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form className="space-y-4" onSubmit={handleLogin}>
-            <div className="space-y-2">
-              <label htmlFor="email" className="text-sm font-medium">
-                Email
-              </label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="Enter your email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <label htmlFor="password" className="text-sm font-medium">
-                Password
-              </label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="Enter your password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </div>
-            {error && <p className="text-red-500 text-sm">{error}</p>}
-            <Button type="submit" className="w-full">
-              Sign In
-            </Button>
-          </form>
+          <AuthForm mode={mode} onSubmit={handleAuth} loading={loading} />
           <div className="mt-4 text-center">
             <p className="text-sm text-gray-600">
-              Don't have an account?{" "}
-              <a
-                href="/auth/register"
-                className="text-blue-600 hover:underline"
-              >
-                Sign up
-              </a>
+              {mode === "login" ? (
+                <>
+                  Don't have an account?{" "}
+                  <button
+                    type="button"
+                    className="text-blue-600 hover:underline"
+                    onClick={() => setMode("register")}
+                  >
+                    Sign up
+                  </button>
+                </>
+              ) : (
+                <>
+                  Already have an account?{" "}
+                  <button
+                    type="button"
+                    className="text-blue-600 hover:underline"
+                    onClick={() => setMode("login")}
+                  >
+                    Sign in
+                  </button>
+                </>
+              )}
             </p>
           </div>
         </CardContent>
